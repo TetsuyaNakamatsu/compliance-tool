@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>医療関係者への支払い・飲食等 稟議判定システム</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#1a2744;--navy2:#253461;--blue:#2563eb;--bluel:#dbeafe;--bluep:#eff6ff;
+  --red:#dc2626;--redl:#fee2e2;--redp:#fff5f5;
+  --yel:#b45309;--yll:#fef3c7;
+  --grn:#15803d;--grnl:#dcfce7;
+  --gr:#6b7280;--grl:#f3f4f6;--grm:#e5e7eb;--wh:#fff;--tx:#111827;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans JP','Hiragino Kaku Gothic Pro',Meiryo,sans-serif;background:#eef2f7;color:var(--tx);font-size:14px;line-height:1.6}
+.hdr{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.hdr-in{max-width:860px;margin:0 auto;padding:20px 24px 16px}
+.hdr-ey{font-size:10px;letter-spacing:.18em;color:#94a3b8;text-transform:uppercase;margin-bottom:5px}
+.hdr-ti{font-size:19px;font-weight:700;margin-bottom:5px}
+.hdr-su{font-size:11px;color:#94a3b8}
+.pgb{background:var(--navy2)}
+.pgb-in{max-width:860px;margin:0 auto;display:flex}
+.pgs{padding:10px 20px;font-size:12px;font-weight:500;color:#94a3b8;border-bottom:2px solid transparent}
+.pgs.act{color:#fff;border-bottom-color:#60a5fa;font-weight:700}
+.main{max-width:860px;margin:0 auto;padding:26px 24px 60px}
+.card{background:var(--wh);border-radius:12px;padding:22px;margin-bottom:16px;border:1px solid var(--grm);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.ctit{font-size:15px;font-weight:700;color:var(--navy);padding-bottom:11px;margin-bottom:16px;border-bottom:2px solid var(--bluel)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.fg{margin-bottom:14px}
+.fg:last-child{margin-bottom:0}
+label.fl{display:block;font-weight:600;font-size:12px;color:var(--navy);margin-bottom:5px}
+.req{color:var(--red);margin-left:2px}
+input[type=text],input[type=date],input[type=number],select,textarea{
+  width:100%;padding:10px 12px;border:1px solid var(--grm);border-radius:8px;
+  font-size:13px;font-family:inherit;color:var(--tx);background:#fff;
+  outline:none;transition:border-color .15s,box-shadow .15s;
+  -webkit-appearance:none;appearance:none
+}
+select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:36px
+}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+input.err,select.err{border-color:var(--red)!important}
+.em{color:var(--red);font-size:11px;margin-top:4px}
+textarea{height:78px;resize:vertical}
+.fhint{font-size:11px;color:var(--gr);margin-top:4px}
+
+/* ラジオボタン - シンプルな標準スタイル（Teams互換） */
+.rops{display:flex;flex-direction:column;gap:8px}
+.rop{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:11px 13px;border-radius:8px;
+  border:1px solid var(--grm);background:var(--grl);
+  font-size:13px;cursor:pointer;transition:all .15s
+}
+.rop:hover{border-color:var(--blue);background:var(--bluep)}
+.rop input[type=radio]{
+  width:16px;height:16px;min-width:16px;
+  margin-top:2px;cursor:pointer;
+  accent-color:var(--blue);flex-shrink:0
+}
+.rop-lbl{line-height:1.5}
+/* 選択済みはJSでclassを付与 */
+.rop.sel{border-color:var(--blue);background:var(--bluel);font-weight:600}
+
+.alr{padding:11px 15px;border-radius:8px;font-size:12px;line-height:1.7;margin-top:11px}
+.alr-r{background:var(--redl);border:1px solid #fca5a5;color:#7f1d1d}
+.bsub{
+  width:100%;padding:14px;
+  background:linear-gradient(135deg,var(--blue),#1d4ed8);
+  color:#fff;border:none;border-radius:10px;
+  font-size:15px;font-weight:700;font-family:inherit;
+  cursor:pointer;letter-spacing:.04em;
+  box-shadow:0 4px 14px rgba(37,99,235,.35);transition:all .18s
+}
+.bsub:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(37,99,235,.4)}
+.rh{border-radius:12px;padding:20px 22px;margin-bottom:16px;border:1px solid var(--grm);background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);border-left-width:5px}
+.rh.ok{border-left-color:var(--grn)}.rh.wa{border-left-color:var(--yel)}.rh.ng{border-left-color:var(--red)}
+.vb{display:inline-flex;align-items:center;gap:6px;padding:7px 17px;border-radius:999px;font-weight:700;font-size:14px}
+.vb.ok{background:var(--grnl);color:var(--grn)}.vb.wa{background:var(--yll);color:var(--yel)}.vb.ng{background:var(--redl);color:var(--red)}
+.ci{padding:10px 13px;border-radius:8px;font-size:13px;line-height:1.65;margin-bottom:7px;background:var(--grl);border:1px solid var(--grm)}
+.ci.dng{background:var(--redp);border-color:#fca5a5;color:#7f1d1d}
+.ci.ok2{background:var(--grnl);border-color:#86efac;color:#14532d}
+.fc{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.fs{background:var(--navy);color:#fff;border-radius:8px;padding:7px 13px;font-size:12px;font-weight:600;white-space:nowrap}
+.fa{color:var(--blue);font-weight:700;font-size:16px}
+.fn{margin-top:13px;font-size:12px;color:var(--gr);line-height:1.7;padding:10px 13px;background:var(--grl);border-radius:8px}
+.tc{background:var(--bluep);border:1px solid #93c5fd;border-radius:12px;padding:18px 22px;margin-bottom:16px}
+.tc h3{color:var(--blue);font-size:14px;margin-bottom:9px}
+.tc p{font-size:13px;color:#1e3a8a;line-height:1.7}
+.brow{display:flex;gap:11px}
+.bsec{flex:1;padding:12px;background:#fff;color:var(--navy);border:1px solid var(--grm);border-radius:10px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer}
+.bsec:hover{background:var(--grl)}
+.bpri{flex:1;padding:12px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer}
+.bpri:hover{background:var(--navy2)}
+.bl{padding-left:17px}.bl li{font-size:13px;margin-bottom:5px;color:var(--navy)}
+.hid{display:none!important}
+@media print{
+  body{background:#fff;font-size:11pt}
+  .hdr{background:var(--navy)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .pgb,.brow,#step1{display:none!important}
+  .main{padding:0;max-width:100%}
+  .card,.rh,.tc{box-shadow:none;page-break-inside:avoid}
+  .vb.ok{background:#dcfce7!important;color:#15803d!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .vb.wa{background:#fef3c7!important;color:#b45309!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .vb.ng{background:#fee2e2!important;color:#dc2626!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .fs{background:var(--navy)!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .ci.dng{background:#fff0f0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .ci.ok2{background:#f0fdf4!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+@media(max-width:600px){.frow{grid-template-columns:1fr}.hdr-ti{font-size:16px}.main{padding:14px 13px 40px}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-in">
+    <div class="hdr-ey">MEDICAL DEVICE COMPLIANCE SYSTEM</div>
+    <div class="hdr-ti">医療関係者への支払い・飲食等　稟議判定システム</div>
+    <div class="hdr-su">根拠: 国家公務員倫理法・倫理規程　／　医療機器業公正競争規約・運用基準　／　医療機器業界透明性ガイドライン</div>
+  </div>
+</div>
+
+<div class="pgb">
+  <div class="pgb-in">
+    <div class="pgs act" id="prog1">1. 申請内容の入力</div>
+    <div class="pgs" id="prog2">2. 判定結果・稟議フロー</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- STEP 1 -->
+  <div id="step1">
+    <div class="card">
+      <div class="ctit">📋 基本情報</div>
+      <div class="frow">
+        <div class="fg">
+          <label class="fl" for="applicant">申請者名<span class="req">*</span></label>
+          <input type="text" id="applicant" placeholder="例: 山田 太郎">
+          <div class="em hid" id="err-applicant">申請者名を入力してください</div>
+        </div>
+        <div class="fg">
+          <label class="fl" for="planDate">実施予定日<span class="req">*</span></label>
+          <input type="date" id="planDate">
+          <div class="em hid" id="err-date">日付を選択してください</div>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl" for="dept">所属部署・担当エリア</label>
+        <input type="text" id="dept" placeholder="例: 東日本営業部 関東チーム">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ctit">👤 相手方の種別<span class="req">*</span></div>
+      <div class="rops">
+        <div class="rop" id="rop-civil" onclick="selectHcp('civil_servant','rop-civil')">
+          <input type="radio" name="hcp" id="hcp-civil" value="civil_servant" onclick="selectHcp('civil_servant','rop-civil')">
+          <label class="rop-lbl" for="hcp-civil" onclick="selectHcp('civil_servant','rop-civil')">公務員医療関係者（国公立病院・国立大学病院等の常勤医師・職員）</label>
+        </div>
+        <div class="rop" id="rop-quasi" onclick="selectHcp('quasi_civil','rop-quasi')">
+          <input type="radio" name="hcp" id="hcp-quasi" value="quasi_civil" onclick="selectHcp('quasi_civil','rop-quasi')">
+          <label class="rop-lbl" for="hcp-quasi" onclick="selectHcp('quasi_civil','rop-quasi')">みなし公務員（独立行政法人・国立大学法人・公立大学法人等）</label>
+        </div>
+        <div class="rop" id="rop-private" onclick="selectHcp('private','rop-private')">
+          <input type="radio" name="hcp" id="hcp-private" value="private" onclick="selectHcp('private','rop-private')">
+          <label class="rop-lbl" for="hcp-private" onclick="selectHcp('private','rop-private')">民間医療機関の医療関係者（私立病院・クリニック等）</label>
+        </div>
+      </div>
+      <div class="em hid" id="err-hcp">相手方の種別を選択してください</div>
+      <div class="alr alr-r hid" id="civil-warning">
+        ⚠️ <strong>公務員・みなし公務員への対応は最も厳格です。</strong>
+        国家公務員倫理規程により、利害関係者からの供応接待・金品提供は原則禁止。飲食提供は限定的な場合のみ可能です。
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ctit">🏷 活動・支払いの種別<span class="req">*</span></div>
+      <div class="fg">
+        <label class="fl" for="activityType">該当する行為を選択</label>
+        <select id="activityType">
+          <option value="">-- 選択してください --</option>
+          <optgroup label="【飲食の提供】">
+            <option value="meal_info">情報提供活動・営業訪問に伴う飲食</option>
+            <option value="meal_negotiation">商談・打合せに伴う飲食</option>
+            <option value="meal_seminar_box">院内説明会・医局説明会での弁当・茶菓提供</option>
+            <option value="meal_lecture_box">講演会・セミナー開催中の弁当・茶菓提供</option>
+            <option value="meal_symposium">講演会等の懇親行事（立食パーティー・情報交換会等）</option>
+            <option value="meal_research_meeting">市販後調査・研究委託に係る会合の飲食</option>
+            <option value="meal_conference">自社医療機器に関する会議の参加者への飲食</option>
+            <option value="meal_speaker_comfort">講演会等の講師・演者への慰労飲食</option>
+          </optgroup>
+          <optgroup label="【金銭・報酬の支払い】">
+            <option value="lecture_fee">講演料・原稿料・座長謝礼の支払い</option>
+            <option value="research_fee">市販後調査・研究委託の報酬（症例報告等）</option>
+            <option value="travel">旅費・交通費・宿泊費の提供</option>
+            <option value="donation">奨学寄付金・学術助成</option>
+          </optgroup>
+          <optgroup label="【物品・その他】">
+            <option value="gift">物品提供・景品（記念品・カレンダー・文具等）</option>
+            <option value="golf">ゴルフ（招待・コンペ協賛・プライベート同伴）</option>
+            <option value="bonenkai">忘年会・新年会・納涼会（医局行事）への参加・費用</option>
+            <option value="ceremony">教授就任式・祝賀会・就任祝い</option>
+          </optgroup>
+        </select>
+        <div class="em hid" id="err-activity">活動の種別を選択してください</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ctit">💴 金額・人数</div>
+      <div class="frow">
+        <div class="fg">
+          <label class="fl" for="amount">1人あたり金額（円・税別）</label>
+          <input type="number" id="amount" placeholder="例: 8000" min="0">
+          <div class="fhint">飲食: 1人あたり税別・サービス料込の金額</div>
+        </div>
+        <div class="fg">
+          <label class="fl" for="pcount">参加人数（名）</label>
+          <input type="number" id="pcount" placeholder="例: 25" min="1">
+          <div class="fhint">立食パーティー等は総参加人数を入力</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ctit">📝 目的・訪問先・備考</div>
+      <div class="fg">
+        <label class="fl" for="purpose">活動目的・訪問先・その他特記事項</label>
+        <textarea id="purpose" placeholder="例: ○○病院 循環器科 △△先生への新製品情報提供後の食事"></textarea>
+      </div>
+    </div>
+
+    <button class="bsub" id="btnSubmit" type="button" onclick="doSubmit()">コンプライアンス判定・稟議フローを確認する →</button>
+  </div>
+
+  <!-- STEP 2 -->
+  <div id="step2" class="hid">
+    <div id="resultHeader" class="rh">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:11px">
+        <div>
+          <div id="resultTitle" style="font-size:12px;color:var(--gr);margin-bottom:7px"></div>
+          <div id="verdictBadge" class="vb"></div>
+        </div>
+        <div id="resultMeta" style="font-size:12px;color:var(--gr);text-align:right;line-height:1.9"></div>
+      </div>
+      <div id="purposeDisplay" style="margin-top:11px;padding:9px 13px;background:var(--grl);border-radius:8px;font-size:12px;color:var(--gr);display:none"></div>
+    </div>
+    <div class="card">
+      <div class="ctit">📖 適用法令・規約</div>
+      <ul class="bl" id="basisList"></ul>
+    </div>
+    <div class="card">
+      <div class="ctit">✅ 遵守事項・実施条件</div>
+      <div id="condsList"></div>
+    </div>
+    <div class="card">
+      <div class="ctit">🔄 稟議・承認フロー</div>
+      <div class="fc" id="flowCont"></div>
+      <div class="fn">
+        ※ 稟議は <strong>事前</strong> に完了させること。事後承認は原則不可です。<br>
+        ※ 関連書類（企画書・領収書・実施報告書・参加者リスト等）は <strong>5年間</strong> 保存してください。<br>
+        ※ 公務員・みなし公務員が関係する場合、コンプライアンス部門への事前相談を必ず行ってください。
+      </div>
+    </div>
+    <div class="tc">
+      <h3>📊 透明性ガイドライン対応（開示要否）</h3>
+      <p id="transText"></p>
+      <p id="transNote" style="margin-top:7px;font-size:11px;color:#1e3a8a">医療機器業界透明性ガイドラインに基づき、年次報告書への記載・ウェブ公開が必要な場合があります。実施後、経理部門・コンプライアンス部門と開示要否を必ず確認してください。</p>
+    </div>
+    <div class="brow">
+      <button class="bsec" id="btnReset" type="button" onclick="doReset()">← 新しい申請を作成</button>
+      <button class="bpri" id="btnPrint" type="button" onclick="window.print()">🖨 印刷 / PDF保存</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ================================================================
+// ★ body末尾配置 / onclick属性方式（Teams CSP対応）
+// ================================================================
+
+// ---- ラジオ選択関数（onclick属性から呼び出し） ----
+function selectHcp(val, ropId) {
+  var radios = document.getElementsByName('hcp');
+  for (var i = 0; i < radios.length; i++) {
+    if (radios[i].value === val) radios[i].checked = true;
+  }
+  var rops = document.querySelectorAll('.rop');
+  for (var j = 0; j < rops.length; j++) rops[j].classList.remove('sel');
+  var target = document.getElementById(ropId);
+  if (target) target.classList.add('sel');
+  var w = document.getElementById('civil-warning');
+  if (val === 'civil_servant' || val === 'quasi_civil') {
+    w.classList.remove('hid');
+  } else {
+    w.classList.add('hid');
+  }
+  document.getElementById('err-hcp').classList.add('hid');
+}
+
+// ---- ラジオ値取得（DOMから直接読む） ----
+function getHcp() {
+  var radios = document.getElementsByName('hcp');
+  for (var i = 0; i < radios.length; i++) {
+    if (radios[i].checked) return radios[i].value;
+  }
+  return '';
+}
+
+// ---- バリデーション ----
+function doValidate() {
+  var ok = true;
+  // テキスト・日付・select
+  var fs = [
+    {id:'applicant', eid:'err-applicant'},
+    {id:'planDate',  eid:'err-date'},
+    {id:'activityType', eid:'err-activity'}
+  ];
+  for (var i = 0; i < fs.length; i++) {
+    var el = document.getElementById(fs[i].id);
+    var er = document.getElementById(fs[i].eid);
+    if (!el.value || !el.value.trim()) {
+      el.classList.add('err'); er.classList.remove('hid'); ok = false;
+    } else {
+      el.classList.remove('err'); er.classList.add('hid');
+    }
+  }
+  // ラジオ（DOMから直接読む）
+  var hcp = getHcp();
+  if (!hcp) {
+    document.getElementById('err-hcp').classList.remove('hid'); ok = false;
+  } else {
+    document.getElementById('err-hcp').classList.add('hid');
+  }
+  return ok;
+}
+
+// ---- 判定エンジン ----
+function getRules(hcp, act, amount, pcount) {
+  var civil = (hcp === 'civil_servant' || hcp === 'quasi_civil');
+  var r = { verdict:'ok', title:'', basis:[], conds:[], flow:[], trans:'' };
+
+  switch (act) {
+
+    case 'meal_info':
+      r.title = '情報提供活動・営業訪問に伴う飲食';
+      r.basis = [
+        '医療機器業公正競争規約 飲食ルール 行為類型Ⅰ-1（上限1万円/人）',
+        civil ? '国家公務員倫理規程第3条（供応接待の禁止）' : '医療機器業界透明性ガイドライン'
+      ];
+      if (civil) {
+        r.verdict = 'ng';
+        r.conds = [
+          '【禁止】公務員・みなし公務員への情報提供活動・営業訪問に伴う飲食の提供は一切禁止です。',
+          '国家公務員倫理規程第3条により、利害関係者からの供応接待は禁止されています。',
+          '情報提供は飲食を伴わない形（訪問・資料送付・メール等）で実施してください。'
+        ];
+        r.flow = ['実施禁止'];
+        r.trans = '禁止行為のため実施不可。コンプライアンス部門へ報告してください。';
+      } else {
+        r.verdict = amount > 10000 ? 'ng' : (amount > 8000 ? 'wa' : 'ok');
+        r.conds = [
+          '上限: 1人あたり1万円（税別・サービス料込）',
+          '場所: バー・クラブ等不可。食事提供が主体の場所に限る',
+          '目的: 自社製品の適正使用・安全使用のための情報提供・収集活動であること',
+          '2次会は不可（きょう応に該当し規約違反）'
+        ];
+        r.flow = ['申請者', '直属上長（課長）', 'コンプライアンス部門（確認）'];
+        r.trans = '飲食提供として透明性ガイドライン開示対象。実施後に経理・コンプライアンス部門へ報告してください。';
+      }
+      break;
+
+    case 'meal_negotiation':
+      r.title = '商談・打合せに伴う飲食';
+      r.basis = [
+        '医療機器業公正競争規約 飲食ルール 行為類型Ⅰ-2（上限1万円/人）',
+        civil ? '国家公務員倫理規程第3条（供応接待の禁止）' : '医療機器業界透明性ガイドライン'
+      ];
+      if (civil) {
+        r.verdict = 'ng';
+        r.conds = [
+          '【禁止】公務員・みなし公務員への商談・打合せに伴う飲食の提供は一切禁止です。',
+          '打合せ・商談は飲食を伴わない形で実施してください。'
+        ];
+        r.flow = ['実施禁止'];
+        r.trans = '禁止行為のため実施不可。';
+      } else {
+        r.verdict = amount > 10000 ? 'ng' : (amount > 8000 ? 'wa' : 'ok');
+        r.conds = [
+          '上限: 1人あたり1万円（税別・サービス料込）',
+          '場所: 食事提供が主体の場所（バー・クラブ不可）',
+          '商談・打合せが主目的であり飲食は副次的であること',
+          '2次会不可'
+        ];
+        r.flow = ['申請者', '直属上長', 'コンプライアンス部門（確認）'];
+        r.trans = '飲食提供として透明性ガイドライン開示対象。';
+      }
+      break;
+
+    case 'meal_seminar_box':
+      r.title = '院内説明会・医局説明会での弁当・茶菓提供';
+      r.basis = ['医療機器業公正競争規約 飲食ルール 行為類型Ⅱ-3（上限3,000円/人）'];
+      if (civil) {
+        r.verdict = 'ng';
+        r.conds = [
+          '【禁止】公務員・みなし公務員への院内・医局説明会における弁当・茶菓の提供は禁止です。',
+          '内規により、公務員への飲食提供は①20名以上の立食パーティー、②自社製品に関する会議中の弁当・茶菓、③講師・演者との会議中の弁当・茶菓のみ認められます。'
+        ];
+        r.flow = ['実施禁止'];
+        r.trans = '禁止行為のため実施不可。';
+      } else {
+        r.verdict = amount > 3000 ? 'ng' : (amount > 2500 ? 'wa' : 'ok');
+        r.conds = [
+          '上限: 1人あたり3,000円（税別・サービス料込）',
+          '食事時間帯の弁当・茶菓のみ可（アルコール不可）',
+          '参加者全員に均等に提供すること',
+          '企画書・実施報告書（参加者リスト含む）を作成し5年間保存すること'
+        ];
+        r.flow = ['申請者', '直属上長', 'コンプライアンス部門（確認）'];
+        r.trans = '飲食提供（説明会弁当）として透明性ガイドライン開示対象。';
+      }
+      break;
+
+    case 'meal_lecture_box':
+      r.title = '講演会・セミナー開催中の弁当・茶菓提供';
+      r.basis = ['医療機器業公正競争規約 飲食ルール 行為類型Ⅱ-4（上限3,000円/人）'];
+      if (civil) {
+        r.verdict = 'ng';
+        r.conds = [
+          '【禁止】公務員・みなし公務員への講演会・セミナー開催中の弁当・茶菓提供は禁止です。',
+          '内規により、公務員への飲食提供は①20名以上の立食パーティー、②自社製品に関する会議中の弁当・茶菓、③講師・演者との会議中の弁当・茶菓のみ認められます。',
+          '講師・演者本人への打合せ中の弁当・茶菓については「講師・演者への慰労飲食」カテゴリで申請してください。'
+        ];
+        r.flow = ['実施禁止（講師・演者への会議中弁当は別カテゴリで申請）'];
+        r.trans = '禁止行為のため実施不可。';
+      } else {
+        r.verdict = amount > 3000 ? 'ng' : (amount > 2500 ? 'wa' : 'ok');
+        r.conds = [
+          '上限: 1人あたり3,000円（税別・サービス料込）',
+          '公共の会議室・ホテルの会議室等、会議場と認められる施設で開催',
+          '弁当・茶菓のみ（アルコール不可）',
+          '講師との事前打合せ時の飲食も同額（3,000円）が上限',
+          '企画書・実施報告書を作成し5年間保存すること'
+        ];
+        r.flow = ['申請者', '直属上長', 'コンプライアンス部門（承認）'];
+        r.trans = '飲食提供（講演会弁当）として透明性ガイドライン開示対象。';
+      }
+      break;
+
+    case 'meal_symposium':
+      r.title = '講演会等の懇親行事（立食パーティー・情報交換会等）';
+      r.basis = ['医療機器業公正競争規約 飲食ルール 行為類型Ⅲ-5（上限2万円/人）'];
+      if (civil) {
+        if (pcount >= 20) {
+          r.verdict = amount > 20000 ? 'ng' : (amount > 15000 ? 'wa' : 'ok');
+          r.conds = [
+            '【内規】公務員・みなし公務員への飲食提供として、参加者20名以上の立食パーティーは可能です。',
+            '上限: 1人あたり2万円（会場費・飲食代・サービス料等の総費用 ÷ 参加者総数）',
+            '現在の参加人数: ' + pcount + '名（20名以上の条件を満たしています）',
+            '講演会・セミナーが確実に開催されることが前提（懇親行事単独は不可）',
+            '2次会は絶対不可（きょう応に該当）',
+            '企画書・実施報告書（参加者リスト含む）を作成し5年間保存すること'
+          ];
+          r.flow = ['申請者', '直属上長', '部門長', 'コンプライアンス部門（承認）'];
+          r.trans = '飲食提供（懇親行事）として透明性ガイドライン開示対象。';
+        } else {
+          r.verdict = 'ng';
+          r.conds = [
+            '【禁止】公務員・みなし公務員への立食パーティーは参加者20名以上の場合のみ可能です。',
+            '現在の参加人数: ' + (pcount || '未入力') + '名 ― 20名未満のため実施できません。',
+            '「参加人数」欄に医療担当者等と自社従業員を合算した実際の参加予定人数を入力して再判定してください。'
+          ];
+          r.flow = ['実施禁止（参加者20名未満）'];
+          r.trans = '参加者20名未満のため実施不可。人数を確認の上、再申請してください。';
+        }
+      } else {
+        r.verdict = amount > 20000 ? 'ng' : (amount > 15000 ? 'wa' : 'ok');
+        r.conds = [
+          '上限: 1人あたり2万円（会場費・飲食代・サービス料等の総費用 ÷ 参加者総数）',
+          '講演会・セミナーが確実に企画・開催されることが前提（懇親行事単独は不可）',
+          '2次会は絶対不可（きょう応に該当）',
+          '企画書・実施報告書を作成し5年間保存すること',
+          '参加者数は医療担当者等と自社従業員を合算した人数で算出'
+        ];
+        r.flow = ['申請者', '直属上長', '部門長', 'コンプライアンス部門（承認）'];
+        r.trans = '飲食提供（懇親行事）として透明性ガイドライン開示対象。';
+      }
+      break;
+
+    case 'meal_research_meeting':
+      r.title = '市販後調査・研究委託に係る会合の飲食';
+      r.basis = ['医療機器業公正競争規約 飲食ルール 行為類型Ⅲ（上限2万円/人）'];
+      if (civil) {
+        r.verdict = 'ng';
+        r.conds = [
+          '【禁止】公務員・みなし公務員への研究委託会合に伴う飲食提供は禁止です。',
+          '内規により、公務員への飲食提供は①20名以上の立食パーティー、②自社製品に関する会議中の弁当・茶菓、③講師・演者との会議中の弁当・茶菓のみ認められます。'
+        ];
+        r.flow = ['実施禁止'];
+        r.trans = '禁止行為のため実施不可。';
+      } else {
+        r.verdict = amount > 20000 ? 'ng' : (amount > 15000 ? 'wa' : 'ok');
+        r.conds = [
+          '上限: 1人あたり2万円',
+          '会合の開催が実態を伴うこと（名目的な会合は不可）',
+          '2次会不可',
+          '企画書・実施報告書を作成し5年間保存すること'
+        ];
+        r.flow = ['申請者', '直属上長', '部門長', 'コンプライアンス部門（承認）'];
+        r.trans = '透明性ガイドライン開示対象。';
+      }
+      break;
+
+    case 'meal_conference':
+      r.title = '自社医療機器に関する会議の参加者への飲食（弁当・茶菓）';
+      r.basis = [
+        '医療機器業公正競争規約 飲食ルール 行為類型Ⅲ（上限2万円/人）',
+        civil ? '国家公務員倫理規程・内規（自社医療機器に関する会議中の弁当・茶菓は可）' : '医療機器業界透明性ガイドライン'
+      ];
+      if (civil) {
+        r.verdict = amount > 3000 ? 'ng' : (amount > 2500 ? 'wa' : 'ok');
+        r.conds = [
+          '【内規】公務員・みなし公務員への飲食提供として、自社医療機器に関する会議中の弁当・茶菓の提供は可能です。',
+          '上限: 1人あたり3,000円（弁当・茶菓に限る。アルコール不可）',
+          '会議が実態を伴うものであること（アジェンダ・議事録を作成すること）',
+          '会議開催中の提供に限る（会議終了後の飲食は禁止）',
+          '企画書・会議アジェンダ・参加者リスト・実施報告書を作成し5年間保存すること'
+        ];
+        r.flow = ['申請者', '直属上長', 'コンプライアンス部門（事前承認）'];
+        r.trans = '飲食提供として透明性ガイドライン開示対象。実施後に経理・コンプライアンス部門へ報告してください。';
+      } else {
+        r.verdict = amount > 20000 ? 'ng' : (amount > 15000 ? 'wa' : 'ok');
+        r.conds = [
+          '上限: 1人あたり2万円',
+          '会議の開催が実態を伴うこと',
+          '2次会不可',
+          '企画書・実施報告書を作成し5年間保存すること'
+        ];
+        r.flow = ['申請者', '直属上長', '部門長', 'コンプライアンス部門（承認）'];
+        r.trans = '透明性ガイドライン開示対象。';
+      }
+      break;
+
+    case 'meal_speaker_comfort':
+      r.title = '講演会等の講師・演者への慰労飲食（会議中の弁当・茶菓含む）';
+      r.basis = [
+        '医療機器業公正競争規約 飲食ルール 行為類型Ⅲ（上限2万円/人）',
+        civil ? '国家公務員倫理規程・内規（講師・演者との会議中の弁当・茶菓は可）' : '医療機器業界透明性ガイドライン'
+      ];
+      if (civil) {
+        r.verdict = amount > 3000 ? 'ng' : (amount > 2500 ? 'wa' : 'ok');
+        r.conds = [
+          '【内規】公務員・みなし公務員の講師・演者への飲食提供として、会議・打合せ中（事前打合せ・リハーサル等）の弁当・茶菓の提供は可能です。',
+          '上限: 1人あたり3,000円（弁当・茶菓に限る。アルコール不可）',
+          '会議・打合せの開催中の提供に限る（会議終了後の慰労飲食・食事会は禁止）',
+          '慰労・接待目的での飲食（会議終了後の食事会等）は一切禁止です。',
+          '打合せアジェンダ・参加者リスト・実施報告書を作成し5年間保存すること'
+        ];
+        r.flow = ['申請者', '直属上長', 'コンプライアンス部門（事前承認）'];
+        r.trans = '飲食提供として透明性ガイドライン開示対象。実施後に経理・コンプライアンス部門へ報告してください。';
+      } else {
+        r.verdict = amount > 20000 ? 'ng' : (amount > 15000 ? 'wa' : 'ok');
+        r.conds = [
+          '上限: 1人あたり2万円',
+          '講演・演者としての実績が実態を伴うこと',
+          '2次会不可',
+          '企画書・実施報告書を作成し5年間保存すること'
+        ];
+        r.flow = ['申請者', '直属上長', '部門長', 'コンプライアンス部門（承認）'];
+        r.trans = '透明性ガイドライン開示対象。';
+      }
+      break;
+
+    case 'lecture_fee':
+      r.title = '講演料・原稿料・座長謝礼の支払い';
+      r.basis = [
+        '医療機器業公正競争規約 運用基準Ⅳ-3（講演・執筆等の依頼）',
+        '医療機器業界透明性ガイドライン（講師謝金は開示必須）'
+      ];
+      r.conds = [
+        '依頼が名目的でないこと（実際に講演・執筆・座長が実施されること）',
+        '報酬額が社会通念上妥当な水準であること',
+        '書面（契約書・依頼書）で依頼すること',
+        '講演会開催記録（企画書・参加者リスト・実施報告書）を保存すること',
+        '取引誘引手段になっていないこと',
+        '源泉徴収税（10.21%）の処理を経理部門と連携して実施すること'
+      ];
+      r.verdict = amount > 500000 ? 'ng' : (amount > 100000 ? 'wa' : 'ok');
+      r.flow = ['申請者', '直属上長', '部門長', 'コンプライアンス部門（承認）', '経理部門'];
+      r.trans = '【開示必須】講師謝金・講演料は透明性ガイドラインにより氏名・金額・講演名等を年次報告書に記載・公開することが必要です。';
+      break;
+
+    case 'research_fee':
+      r.title = '市販後調査・研究委託の報酬（症例報告等）';
+      r.basis = [
+        '医療機器業公正競争規約 運用基準Ⅳ-4（市販後調査・研究委託に関する基準）',
+        '医療機器業界透明性ガイドライン'
+      ];
+      r.conds = [
+        '使用成績調査・不具合報告: 1症例あたり上限1万円を目安（難易度が特に高い場合は3万円上限）',
+        '製造販売後臨床試験: 合理的・明確な積算根拠を書面で示すこと',
+        '受託契約書（書面）を締結し保管すること',
+        '実施報告書を受領・確認・保管すること',
+        '過大な報酬による取引誘引は禁止',
+        '源泉徴収処理を経理部門と連携して実施すること'
+      ];
+      r.verdict = amount > 100000 ? 'ng' : (amount > 30000 ? 'wa' : 'ok');
+      r.flow = ['申請者', '直属上長', '部門長', 'コンプライアンス部門（承認）', '経理部門'];
+      r.trans = '【開示必須】研究・調査等の委託先として透明性ガイドラインに基づき開示が必要です。';
+      break;
+
+    case 'travel':
+      r.title = '旅費・交通費・宿泊費の提供';
+      r.basis = [
+        '医療機器業公正競争規約 運用基準Ⅳ-2（医学・医療機器情報に関する基準）',
+        civil ? '国家公務員倫理規程（旅費・宿泊費の提供禁止）' : '医療機器業界透明性ガイドライン'
+      ];
+      if (civil) {
+        r.verdict = 'ng';
+        r.conds = [
+          '【禁止】公務員・みなし公務員への交通費・宿泊費の提供は国家公務員倫理規程違反。一切禁止です。',
+          '公務員が講師等として出張する場合は、所属機関の規程に従った公費対応となります。'
+        ];
+        r.flow = ['実施禁止'];
+        r.trans = '禁止行為のため実施不可。コンプライアンス部門へ報告してください。';
+      } else {
+        r.verdict = 'wa';
+        r.conds = [
+          '学術集会・講演会の講師等への交通費・宿泊費は実費精算のみ可',
+          '実費を超える提供（グレードアップ等）は不可',
+          '事業者主催の学術集会参加者への旅費提供は原則不可',
+          '書面による依頼・契約が必要。領収書原本を保管すること'
+        ];
+        r.flow = ['申請者', '直属上長', 'コンプライアンス部門（承認）', '経理部門'];
+        r.trans = '【開示必須】講師への交通費・宿泊費は透明性ガイドラインの開示対象です。';
+      }
+      break;
+
+    case 'donation':
+      r.title = '奨学寄付金・学術助成';
+      r.basis = [
+        '医療機器業公正競争規約 運用基準Ⅱ-2（団体・学会等への寄付）',
+        '医療機器業界透明性ガイドライン（奨学寄付金は開示必須）'
+      ];
+      r.verdict = 'wa';
+      r.conds = [
+        '医学・医療機器研究を主たる目的とする団体への寄付は可',
+        '事前に募金趣意書・収支予算書を入手すること',
+        '寄付金が参加者個人の交通費・宿泊費・飲食費に流用されることは不可',
+        '終了後に決算報告書を受領し適正使用を確認すること',
+        '特定個人・特定医療機関への直接寄付は不当な取引誘引と見なされる可能性が高い',
+        '書面での合意・記録保存（寄付金受領書等）'
+      ];
+      r.flow = ['申請者', '直属上長', '部門長', 'コンプライアンス部門（承認）', '代表取締役・役員（高額の場合）'];
+      r.trans = '【開示必須】奨学寄付金は透明性ガイドラインにより寄付先・金額・目的を年次報告書に記載・公開することが必要です。';
+      break;
+
+    case 'gift':
+      r.title = '物品提供・景品（記念品・カレンダー・文具等）';
+      r.basis = [
+        '医療機器業公正競争規約施行規則第5条第1号（少額景品の許容）',
+        '運用基準Ⅴ-1（少額・適正な景品類に関する基準）'
+      ];
+      if (civil) {
+        r.verdict = 'ng';
+        r.conds = [
+          '【禁止】公務員・みなし公務員への物品・景品の提供は一切禁止です（倫理規程第3条）。',
+          '社名入りカレンダー・文具等も含め、一切の物品提供は不可です。'
+        ];
+        r.flow = ['実施禁止'];
+        r.trans = '禁止行為のため実施不可。';
+      } else {
+        r.verdict = amount > 3000 ? 'ng' : (amount > 2000 ? 'wa' : 'ok');
+        r.conds = [
+          '上限の目安: 単価3,000円程度まで（市価ベース）',
+          '反復・継続した同一人物への提供は不可',
+          '現金・商品券・ギフトカードは不可',
+          '自社製品・ブランドロゴ入りの実用的なもの（カレンダー・手帳等）が典型',
+          '同一人物への年間累積金額に注意すること'
+        ];
+        r.flow = ['申請者', '直属上長'];
+        r.trans = '景品類として透明性ガイドライン開示対象（累計で管理してください）。';
+      }
+      break;
+
+    case 'golf':
+      r.title = 'ゴルフ（招待・コンペ協賛・プライベート同伴）';
+      r.basis = [
+        '国家公務員倫理規程第3条（利害関係者からの供応接待の禁止）',
+        '医療機器業公正競争規約第5条（景品類の提供禁止）',
+        '公正競争規約運用基準: ゴルフは娯楽性が高く業務として正当化不可'
+      ];
+      if (civil) {
+        r.verdict = 'ng';
+        r.conds = [
+          '【全面禁止】公務員へのゴルフ招待・誘い・誘いに応じることは一切禁止',
+          '【全面禁止】コンペへの協賛（景品・飲料の提供含む）は贈賄・倫理法違反に該当',
+          '【全面禁止】プライベートでの同伴も禁止'
+        ];
+        r.flow = ['実施禁止 ― コンプライアンス部門へ報告'];
+        r.trans = '公務員・みなし公務員へのゴルフ招待・コンペ協賛・プライベート同伴はいずれも全面禁止です。';
+      } else {
+        r.verdict = 'wa';
+        r.conds = [
+          '【招待・コンペ協賛】公正競争規約違反（原則禁止）。メーカーが費用を一部でも負担すると規約違反',
+          '【プライベート同伴のみ】完全割り勘の場合に限り可',
+          '　条件①: 費用は1円単位で完全実費（送迎・茶代・昼食の肩代わり一切禁止）',
+          '　条件②: 実施は休日または有給休暇中',
+          '　条件③: 予約は医師本人またはプライベートの知人が行うこと',
+          '　条件④: 経費精算は絶対禁止（領収書の会社提出も不可）'
+        ];
+        r.flow = ['申請者', 'コンプライアンス部門（事前相談必須）'];
+        r.trans = 'ゴルフ招待・協賛は規約上の景品類に該当するため実施不可。プライベート同伴（完全割り勘）は経費精算禁止。';
+      }
+      break;
+
+    case 'bonenkai':
+      r.title = '忘年会・新年会・納涼会（医局行事）への参加';
+      r.basis = [
+        civil ? '国家公務員倫理規程第3条' : '医療機器業公正競争規約 飲食ルール',
+        '医療機器業公正競争規約施行規則第5条第2号（慣例として行われる親睦の会合）'
+      ];
+      if (civil) {
+        // 公務員: 完全割り勘のみ可。1万円を超える場合は相手方の倫理監督部門への届出確認が必要
+        if (amount > 10000) {
+          r.verdict = 'wa';
+          r.conds = [
+            '完全割り勘（実費）のみ可。メーカー側が1円でも多く支払うことは倫理規程違反',
+            '【重要・1万円を超える場合】国家公務員倫理規程第14条により、1万円を超える飲食を伴う会合への参加は、公務員本人が所属機関の倫理監督官（倫理監督部門）への届出義務が生じる場合があります。',
+            '参加前に相手方（公務員）が倫理監督部門への届出を行っているか必ず確認してください。',
+            '届出が確認できない場合は参加を見合わせてください。',
+            '景品・飲料・差し入れの提供は全面禁止（ビンゴ景品等含む）',
+            '2次会への参加は禁止'
+          ];
+          r.flow = ['申請者', '直属上長', 'コンプライアンス部門（事前承認）', '相手方の倫理監督部門届出の確認'];
+        } else {
+          r.verdict = 'wa';
+          r.conds = [
+            '完全割り勘（実費）のみ可。メーカー側が1円でも多く支払うことは倫理規程違反',
+            '景品・飲料・差し入れの提供は全面禁止（ビンゴ景品等含む）',
+            '2次会への参加は禁止',
+            '会費制であっても一律額を超えた負担は禁止'
+          ];
+          r.flow = ['申請者', '直属上長', 'コンプライアンス部門（事前承認）'];
+        }
+      } else {
+        r.verdict = 'ok';
+        r.conds = [
+          '会費制の場合は実費相当額を支払って出席可（案内状をもとに事前承認制）',
+          '会費はメーカー側の負担が病院スタッフより高くならないこと（一律であること）',
+          '景品の提供は原則禁止（ビンゴ大会の景品・差し入れ等も不可）',
+          'お酒・飲料の差し入れは原則禁止',
+          '2次会への参加は禁止'
+        ];
+        r.flow = ['申請者', '直属上長', 'コンプライアンス部門（事前承認）'];
+      }
+      r.trans = '会費として支払った金額は透明性ガイドライン開示対象となる場合があります。実施後に経理部門へ報告してください。';
+      break;
+
+    case 'ceremony':
+      r.title = '教授就任式・祝賀会・就任祝い';
+      r.basis = [
+        '国家公務員倫理規程第3条',
+        '医療機器業公正競争規約（不当な利益供与の禁止）'
+      ];
+      r.verdict = 'wa';
+      r.conds = [
+        '【全面禁止】お祝い金・花輪代等の金銭提供（公務員・民間問わず禁止）',
+        '【全面禁止】お祝いの品（花・置物・商品券等）（公務員・民間問わず禁止）',
+        '【全面禁止】祝賀会への広告・協賛・協力金',
+        '広告掲載対価としての正当な支払いは可（正式な媒体掲載の場合）',
+        '無償招待を受ける場合: 一般的な会費相当額（目安1万～2万円）を主催者事務局に支払うこと',
+        '上長およびコンプライアンス部門の事前承認を必ず取得すること'
+      ];
+      r.flow = ['申請者', '直属上長', '部門長', 'コンプライアンス部門（事前承認必須）'];
+      r.trans = '支払い金額がある場合は透明性ガイドライン開示対象となる場合があります。';
+      break;
+
+    default:
+      r.title = 'その他';
+      r.verdict = 'wa';
+      r.conds = ['個別にコンプライアンス部門へ相談してください'];
+      r.flow = ['申請者', 'コンプライアンス部門（相談）'];
+      r.trans = 'コンプライアンス部門に個別に確認してください。';
+  }
+  return r;
+}
+
+// ---- 送信処理 ----
+function doSubmit() {
+  if (!doValidate()) { window.scrollTo(0, 0); return; }
+
+  var applicant = document.getElementById('applicant').value;
+  var date      = document.getElementById('planDate').value;
+  var dept      = document.getElementById('dept').value;
+  var act       = document.getElementById('activityType').value;
+  var amount    = parseFloat(document.getElementById('amount').value) || 0;
+  var pcount    = parseInt(document.getElementById('pcount').value) || 0;
+  var purpose   = document.getElementById('purpose').value;
+  var hcp       = getHcp(); // ★DOMから直接取得
+
+  var r = getRules(hcp, act, amount, pcount);
+
+  // result header
+  var rh = document.getElementById('resultHeader');
+  rh.className = 'rh ' + r.verdict;
+  document.getElementById('resultTitle').textContent = r.title;
+
+  var vb = document.getElementById('verdictBadge');
+  vb.className = 'vb ' + r.verdict;
+  var vt = { ok:'✓ 実施可能', wa:'⚠ 条件付き可 ／ 要確認', ng:'✕ 禁止・実施不可' };
+  vb.textContent = vt[r.verdict] || '';
+
+  var hcpL = { civil_servant:'公務員医療関係者', quasi_civil:'みなし公務員', private:'民間医療機関' };
+  var ds = '';
+  if (date) {
+    var dp = date.split('-');
+    ds = dp[0] + '年' + parseInt(dp[1]) + '月' + parseInt(dp[2]) + '日';
+  }
+  document.getElementById('resultMeta').innerHTML =
+    '<span>申請者: <strong>' + esc(applicant) + '</strong>' + (dept ? ' ／ ' + esc(dept) : '') + '</span>' +
+    '<span>予定日: <strong>' + ds + '</strong></span>' +
+    (amount ? '<span>金額: <strong>' + amount.toLocaleString() + '円/人' + (pcount ? ' × ' + pcount + '名' : '') + '</strong></span>' : '') +
+    '<span>相手方: <strong>' + (hcpL[hcp] || '') + '</strong></span>';
+
+  var pd = document.getElementById('purposeDisplay');
+  if (purpose) { pd.style.display = 'block'; pd.textContent = '目的・備考: ' + purpose; }
+  else { pd.style.display = 'none'; }
+
+  document.getElementById('basisList').innerHTML = r.basis.map(function(b){ return '<li>' + esc(b) + '</li>'; }).join('');
+
+  document.getElementById('condsList').innerHTML = r.conds.map(function(c) {
+    var d = (c.indexOf('【禁止】') === 0 || c.indexOf('【全面禁止】') === 0);
+    var g = (c.indexOf('【内規】') === 0);
+    var w = (c.indexOf('【重要') === 0);
+    var cls = d ? ' dng' : (g ? ' ok2' : (w ? ' dng' : ''));
+    return '<div class="ci' + cls + '">' + esc(c) + '</div>';
+  }).join('');
+
+  document.getElementById('flowCont').innerHTML = r.flow.map(function(s, i) {
+    return '<div class="fs">' + esc(s) + '</div>' +
+           (i < r.flow.length - 1 ? '<span class="fa">→</span>' : '');
+  }).join('');
+
+  document.getElementById('transText').textContent = r.trans;
+  var tn = document.getElementById('transNote');
+  tn.style.display = (r.verdict === 'ng') ? 'none' : '';
+
+  document.getElementById('step1').classList.add('hid');
+  document.getElementById('step2').classList.remove('hid');
+  document.getElementById('prog1').classList.remove('act');
+  document.getElementById('prog2').classList.add('act');
+  window.scrollTo(0, 0);
+}
+
+// ---- リセット ----
+function doReset() {
+  document.getElementById('step1').classList.remove('hid');
+  document.getElementById('step2').classList.add('hid');
+  document.getElementById('prog1').classList.add('act');
+  document.getElementById('prog2').classList.remove('act');
+  document.getElementById('purposeDisplay').style.display = 'none';
+  // ラジオ解除
+  var radios2 = document.getElementsByName('hcp');
+  for (var i = 0; i < radios2.length; i++) radios2[i].checked = false;
+  var rops2 = document.querySelectorAll('.rop');
+  for (var j = 0; j < rops2.length; j++) rops2[j].classList.remove('sel');
+  document.getElementById('civil-warning').classList.add('hid');
+  // フィールドリセット
+  var ids = ['applicant','planDate','dept','amount','pcount','purpose'];
+  for (var k = 0; k < ids.length; k++) document.getElementById(ids[k]).value = '';
+  document.getElementById('activityType').value = '';
+  // エラー表示リセット
+  var ems = document.querySelectorAll('.em');
+  for (var l = 0; l < ems.length; l++) ems[l].classList.add('hid');
+  var errs = document.querySelectorAll('.err');
+  for (var m = 0; m < errs.length; m++) errs[m].classList.remove('err');
+  window.scrollTo(0, 0);
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
