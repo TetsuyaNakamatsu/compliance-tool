@@ -260,11 +260,11 @@ textarea{height:78px;resize:vertical}
     </div>
     <div class="card">
       <div class="ctit">🔄 稟議・承認フロー</div>
-      <div class="fc" id="flowCont"></div>
       <div class="fn">
+        本判定シートの結果および公務員該当性チェックシートを添付して、事前申請を行ってください。<br>
+        経費精算には明細がわかるレシート（領収書は不可）及び参加者自筆の芳名帳等を添付してください。<br>
         ※ 稟議は <strong>事前</strong> に完了させること。事後承認は原則不可です。<br>
-        ※ 関連書類（企画書・領収書・実施報告書・参加者リスト等）は <strong>5年間</strong> 保存してください。<br>
-        ※ 公務員・みなし公務員が関係する場合、コンプライアンス部門への事前相談を必ず行ってください。
+        ※ 関連書類（企画書・レシート・実施報告書・芳名帳（参加者リスト等））は <strong>5年間</strong> 保存してください。
       </div>
     </div>
     <div class="tc">
@@ -843,10 +843,7 @@ function doSubmit() {
     return '<div class="ci' + cls + '">' + esc(c) + '</div>';
   }).join('');
 
-  document.getElementById('flowCont').innerHTML = r.flow.map(function(s, i) {
-    return '<div class="fs">' + esc(s) + '</div>' +
-           (i < r.flow.length - 1 ? '<span class="fa">→</span>' : '');
-  }).join('');
+  // flowCont removed from display
 
   document.getElementById('transText').textContent = r.trans;
   var tn = document.getElementById('transNote');
