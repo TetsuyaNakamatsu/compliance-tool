@@ -156,6 +156,15 @@ textarea{height:78px;resize:vertical}
     </div>
 
     <div class="card">
+      <div class="ctit">📝 目的・訪問先・備考</div>
+      <div class="fg">
+        <label class="fl" for="purpose">活動目的・訪問先・その他特記事項<span class="req">*</span></label>
+        <textarea id="purpose" placeholder="例: ○○病院 循環器科 △△先生への新製品情報提供後の食事"></textarea>
+        <div class="em hid" id="err-purpose">目的・訪問先・備考を入力してください</div>
+      </div>
+    </div>
+
+    <div class="card">
       <div class="ctit">👤 相手方の種別<span class="req">*</span></div>
       <div class="rops">
         <div class="rop" id="rop-civil" onclick="selectHcp('civil_servant','rop-civil')">
@@ -224,14 +233,6 @@ textarea{height:78px;resize:vertical}
           <input type="number" id="pcount" placeholder="例: 25" min="1">
           <div class="fhint">立食パーティー等は総参加人数を入力</div>
         </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="ctit">📝 目的・訪問先・備考</div>
-      <div class="fg">
-        <label class="fl" for="purpose">活動目的・訪問先・その他特記事項</label>
-        <textarea id="purpose" placeholder="例: ○○病院 循環器科 △△先生への新製品情報提供後の食事"></textarea>
       </div>
     </div>
 
@@ -320,7 +321,8 @@ function doValidate() {
   var fs = [
     {id:'applicant', eid:'err-applicant'},
     {id:'planDate',  eid:'err-date'},
-    {id:'activityType', eid:'err-activity'}
+    {id:'activityType', eid:'err-activity'},
+    {id:'purpose',   eid:'err-purpose'}
   ];
   for (var i = 0; i < fs.length; i++) {
     var el = document.getElementById(fs[i].id);
